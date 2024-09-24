@@ -3,16 +3,20 @@ package com.stream.app.services;
 import ch.qos.logback.core.util.StringUtil;
 import com.stream.app.entities.Video;
 import com.stream.app.repositories.VideoRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Service
@@ -23,6 +27,22 @@ public class VideoServiceImpl implements VideoService {
 
     @Autowired
     private VideoRepository videoRepository;
+
+    public VideoServiceImpl(VideoRepository videoRepository) {
+        this.videoRepository = videoRepository;
+    }
+
+    @PostConstruct
+    public void init(){
+        File file= new File(DIR);
+
+        if(!file.exists()){
+            file.mkdir();
+            System.out.println("Folder created!");
+        } else {
+            System.out.println("Folder already created");
+        }
+    }
 
     @Override
     public Video save(Video video, MultipartFile file) {
@@ -37,11 +57,19 @@ public class VideoServiceImpl implements VideoService {
             Path path= Paths.get(cleanFolder, cleanFileName);
 
             System.out.println(path);
+            System.out.println(contentType);
+
+            Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
+
+            video.setContentType(contentType);
+            video.setFilePath(path.toString());
+
+            return videoRepository.save(video);
 
         } catch (IOException ex) {
             ex.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     @Override

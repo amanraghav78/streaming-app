@@ -9,8 +9,7 @@ import lombok.*;
 @Table(name = "yt_video")
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class Video {
 
     @Id
@@ -24,7 +23,5 @@ public class Video {
 
     private String filePath;
 
-//    @ManyToOne
-//    private Course course;
 }
 
